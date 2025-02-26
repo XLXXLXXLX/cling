@@ -13,3 +13,4 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/UserInterface/textinput OR
    add_subdirectory(UserInterface)
 endif()
 add_subdirectory(Utils)
+add_subdirectory(Debugger)

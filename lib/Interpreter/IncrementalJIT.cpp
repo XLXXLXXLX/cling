@@ -31,6 +31,8 @@
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
 
+#include "global_logger.h"
+
 #include <optional>
 
 #ifdef __linux__
@@ -707,6 +709,7 @@ IncrementalJIT::addOrReplaceDefinition(StringRef Name,
 }
 
 void* IncrementalJIT::getSymbolAddress(StringRef Name, bool IncludeHostSymbols){
+  SPDLOG_LOGGER_TRACE(logger, "Name: {}",Name.str());
   std::unique_lock<SharedAtomicFlag> G(SkipHostProcessLookup, std::defer_lock);
   if (!IncludeHostSymbols)
     G.lock();

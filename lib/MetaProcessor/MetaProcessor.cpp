@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 #include "cling/MetaProcessor/MetaProcessor.h"
+#include "global_logger.h"
 #include "cling/MetaProcessor/InputValidator.h"
 #include "cling/MetaProcessor/MetaParser.h"
 #include "cling/MetaProcessor/MetaSema.h"
@@ -29,6 +30,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cctype>
+#include <spdlog/spdlog.h>
 #include <sstream>
 #include <stdio.h>
 #ifndef WIN32
@@ -296,6 +298,7 @@ namespace cling {
                              Interpreter::CompilationResult& compRes,
                              Value* result,
                              bool disableValuePrinting /* = false */) {
+    SPDLOG_LOGGER_TRACE(logger, "process: {}",input_line.str());
     if (result)
       *result = Value();
     compRes = Interpreter::kSuccess;
@@ -307,6 +310,7 @@ namespace cling {
     if (input_line.empty() ||
         (input_line.size() == 1 && input_line.front() == '\n')) {
       // just a blank line, nothing to do.
+      SPDLOG_LOGGER_TRACE(logger, "process: blank line");
       return expectedIndent;
     }
 

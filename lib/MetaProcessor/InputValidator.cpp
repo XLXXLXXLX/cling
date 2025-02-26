@@ -8,9 +8,11 @@
 //------------------------------------------------------------------------------
 
 #include "cling/MetaProcessor/InputValidator.h"
+#include "global_logger.h"
 #include "cling/MetaProcessor/MetaLexer.h"
 
 #include <algorithm>
+#include <spdlog/spdlog.h>
 
 namespace cling {
   bool InputValidator::inBlockComment() const {
@@ -19,6 +21,7 @@ namespace cling {
 
   InputValidator::ValidationResult
   InputValidator::validate(llvm::StringRef line) {
+    SPDLOG_LOGGER_TRACE(logger, "validating {}",line.str());
     ValidationResult Res = kComplete;
     MetaLexer Lex(line.data(), /*skipWhiteSpace=*/true);
     Token Tok, lastNonSpaceTok;

@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 #include "cling/UserInterface/UserInterface.h"
+#include "global_logger.h"
 
 #include "cling/Interpreter/Exception.h"
 #include "cling/MetaProcessor/MetaProcessor.h"
@@ -21,6 +22,7 @@
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/Path.h"
+#include <spdlog/spdlog.h>
 
 #include "clang/Basic/LangOptions.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -147,6 +149,7 @@ namespace cling {
 
     while (!Done) {
       try {
+        SPDLOG_LOGGER_TRACE(logger, "flushing");
         m_MetaProcessor->getOuts().flush();
         {
           MetaProcessor::MaybeRedirectOutputRAII RAII(*m_MetaProcessor);

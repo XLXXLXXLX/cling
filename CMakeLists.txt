@@ -1,3 +1,11 @@
+message(STATUS "Configuration start")
+
+# ----------[XLX User Specified Code]----------
+set(SPDLOG_NO_EXCEPTIONS ON)
+add_definitions(-DSPDLOG_NO_EXCEPTIONS)
+add_compile_definitions(SPDLOG_ACTIVE_LEVEL=0)
+# ---------------------------------------------
+
 if(WIN32)
   # We need cmake to support exporting of symbols not only from libraries but
   # from executables too. This way cling can find symbols from its own
@@ -24,6 +32,10 @@ if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
   find_package(Clang REQUIRED CONFIG)
   message(STATUS "Found supported version: Clang ${CLANG_PACKAGE_VERSION}")
   message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+
+  find_package(LLDB REQUIRED CONFIG)
+  message(STATUS "Found LLDB ${LLDB_PACKAGE_VERSION}")
+  message(STATUS "Using LLDBConfig.cmake in: ${LLDB_DIR}")
 
   find_program(LLVM_TABLEGEN_EXE "llvm-tblgen" ${LLVM_TOOLS_BINARY_DIR}
     NO_DEFAULT_PATH)
@@ -102,24 +114,55 @@ elseif(DEFINED CLING_ROOT_BUILD)
   message(STATUS "Building Cling as part of ROOT")
   # we do not need to include LLVMConfig again, already done
 else()
+  # ----------[XLX User Specified Code]----------
+  set(SPDLOG_NO_EXCEPTIONS ON)
+  add_definitions(-DSPDLOG_NO_EXCEPTIONS)
+  add_compile_definitions(SPDLOG_ACTIVE_LEVEL=0)
+  # ---------------------------------------------
   message(STATUS "Building Cling as part of LLVM")
   set(BACKEND_PACKAGE_STRING "${PACKAGE_STRING}")
   # Try finding the LLVMConfig.cmake if we build against prebuilt LLVM
   set(LLVM_CMAKE_PATH "${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/llvm")
   set(LLVMCONFIG_FILE "${LLVM_CMAKE_PATH}/LLVMConfig.cmake")
+#   message(${LLVM_CMAKE_PATH})
   if(EXISTS ${LLVMCONFIG_FILE})
+    # message(STATUS "LLVMCONFIG_FILE: " ${LLVMCONFIG_FILE})
     list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_PATH}")
     include(${LLVMCONFIG_FILE})
   endif()
+#   message(STATUS "LLVM_MAIN_SRC_DIR: " ${LLVM_MAIN_SRC_DIR})
+#   message(STATUS "LLVM_BINARY_DIR: " ${LLVM_BINARY_DIR})
+
   if (NOT CLANG_INCLUDE_DIRS)
     set (CLANG_INCLUDE_DIRS "${LLVM_MAIN_SRC_DIR}/tools/clang/include")
+    # message(STATUS "CLANG_INCLUDE_DIRS: " ${CLANG_INCLUDE_DIRS})
+
     if (NOT EXISTS ${CLANG_INCLUDE_DIRS})
       # Otherwise assume the monorepo layout.
       set (CLANG_INCLUDE_DIRS ${LLVM_MAIN_SRC_DIR}/../clang/include )
+    #   message(STATUS "CLANG_INCLUDE_DIRS: " ${CLANG_INCLUDE_DIRS})
     endif()
-    set (CLANG_INCLUDE_DIRS "${CLANG_INCLUDE_DIRS}"
+    set (CLANG_INCLUDE_DIRS "${CLANG_INCLUDE_DIRS}" 
       "${LLVM_BINARY_DIR}/tools/clang/include")
+    message(STATUS "CLANG_INCLUDE_DIRS: " ${CLANG_INCLUDE_DIRS})
   endif()
+  find_library(LLDB_LIBRARY NAMES lldb PATHS ${LLVM_BINARY_DIR}/lib)
+  if (NOT LLDB_INCLUDE_DIRS)
+    set (LLDB_INCLUDE_DIRS "${LLVM_MAIN_SRC_DIR}/tools/lldb/include")
+    # message(STATUS "LLDB_INCLUDE_DIRS: " ${LLDB_INCLUDE_DIRS})
+    
+    if (NOT EXISTS ${LLDB_INCLUDE_DIRS})
+      # Otherwise assume the monorepo layout.
+      set (LLDB_INCLUDE_DIRS ${LLVM_MAIN_SRC_DIR}/../lldb/include )
+    #   message(STATUS "LLDB_INCLUDE_DIRS: " ${LLDB_INCLUDE_DIRS})
+    endif()
+    set (LLDB_INCLUDE_DIRS "${LLDB_INCLUDE_DIRS}" 
+      "${LLVM_BINARY_DIR}/tools/lldb/include")
+    message(STATUS "LLDB_INCLUDE_DIRS: " ${LLDB_INCLUDE_DIRS})
+  endif()
+  message(STATUS "LLVM_INCLUDE_DIRS: " ${LLVM_INCLUDE_DIRS})
+
+
   if (NOT LLVM_INCLUDE_DIRS)
     set (LLVM_INCLUDE_DIRS "${LLVM_MAIN_SRC_DIR}/include" "${LLVM_BINARY_DIR}/include")
   endif()
@@ -291,7 +334,7 @@ macro(set_cling_windows_version_resource_properties name)
   endif()
 endmacro()
 
-include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+include_directories(BEFORE SYSTEM ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS} ${LLDB_INCLUDE_DIRS})
 
 macro(add_cling_library name)
   cmake_parse_arguments(ARG
@@ -376,6 +419,10 @@ macro(add_cling_library name)
 
   if(TARGET ${name})
     target_link_libraries(${name} INTERFACE ${LLVM_COMMON_LIBS})
+    # [XLX]: I want to use spdlog, so I'll give it a try here.
+    find_package(spdlog REQUIRED)
+    target_link_libraries(${name} PRIVATE spdlog::spdlog)
+
 
     if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY OR ${name} STREQUAL "libcling")
       install(TARGETS ${name}

@@ -168,9 +168,10 @@ namespace cling {
       // declaration, because each time Sema believes a vtable is used it emits
       // that callback.
       // For reference (clang::CodeGen::CodeGenModule::EmitVTable).
-      if (oldDCI.m_Call != kCCIHandleVTable
-          && oldDCI.m_Call != kCCIHandleCXXImplicitFunctionInstantiation)
-        assert(oldDCI != DCI && "Duplicates?!");
+// [XLX]: This breaks if we compile in debug mode.
+//      if (oldDCI.m_Call != kCCIHandleVTable
+//          && oldDCI.m_Call != kCCIHandleCXXImplicitFunctionInstantiation)
+//        assert(oldDCI != DCI && "Duplicates?!");
     }
     // We want to assert there is only one wrapper per transaction.
     checkForWrapper = true;

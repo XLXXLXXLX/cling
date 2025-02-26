@@ -21,11 +21,21 @@
 #include "llvm/Support/PrettyStackTrace.h"
 #include "llvm/Support/Signals.h"
 
+#include "global_logger.h"
+#include <spdlog/common.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
+#include "cling/Debugger/Debugger.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
+
+#include <lldb/API/SBDebugger.h>
 
 #if defined(WIN32) && defined(_MSC_VER)
 #include <crtdbg.h>
@@ -107,7 +117,13 @@ static void runStartupFiles(cling::UserInterface& Ui) {
   }
 }
 
-int main( int argc, char **argv ) {
+int main(int argc, char** argv) {
+  init_logger();
+//   init_debugger();
+  logger->info("Logger initialized in main.cpp");
+//   logger->debug("Debugger ID: {}",global_debugger->GetID());
+  logger->info("Welcome to cling!");
+  SPDLOG_LOGGER_TRACE(logger, "main");
 
   llvm::llvm_shutdown_obj shutdownTrigger;
 
@@ -118,7 +134,7 @@ int main( int argc, char **argv ) {
   // Suppress error dialogs to avoid hangs on build nodes.
   // One can use an environment variable (Cling_GuiOnAssert) to enable
   // the error dialogs.
-  const char *EnablePopups = getenv("Cling_GuiOnAssert");
+  const char* EnablePopups = getenv("Cling_GuiOnAssert");
   if (EnablePopups == nullptr || EnablePopups[0] == '0') {
     ::_set_error_mode(_OUT_TO_STDERR);
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
@@ -131,6 +147,7 @@ int main( int argc, char **argv ) {
 #endif
 
   // Set up the interpreter
+  SPDLOG_LOGGER_TRACE(logger, "Set up the interpreter");
   cling::Interpreter Interp(argc, argv);
   const cling::InvocationOptions& Opts = Interp.getOptions();
 
@@ -155,18 +172,20 @@ int main( int argc, char **argv ) {
     return EXIT_FAILURE;
   }
 
+  SPDLOG_LOGGER_TRACE(logger, "Interp.AddIncludePath");
   Interp.AddIncludePath(".");
 
   for (const std::string& Lib : Opts.LibsToLoad)
     Interp.loadFile(Lib);
 
+  SPDLOG_LOGGER_TRACE(logger, "cling::UserInterface Ui(Interp);");
   cling::UserInterface Ui(Interp);
 
   runStartupFiles(Ui);
 
   // If we are not interactive we're supposed to parse files
   if (!Opts.IsInteractive()) {
-    for (const std::string &Input : Opts.Inputs) {
+    for (const std::string& Input : Opts.Inputs) {
       std::string Cmd;
       cling::Interpreter::CompilationResult Result;
       const std::string Filepath = Interp.lookupFileOrLibrary(Input);
@@ -187,8 +206,7 @@ int main( int argc, char **argv ) {
       Cmd += Input;
       Ui.getMetaProcessor()->process(Cmd, Result, 0);
     }
-  }
-  else {
+  } else {
     Ui.runInteractively(Opts.NoLogo);
   }
 

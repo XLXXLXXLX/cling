@@ -54,6 +54,7 @@ set(LIBS
         clingMetaProcessor
         ${INTERPRETER}
         clingUtils
+        clingDebugger
     )
 
 if( LLVM_ENABLE_PIC )

@@ -25,7 +25,6 @@ set(LLVM_LINK_COMPONENTS
   binaryformat
   ${LLVM_TARGETS_TO_BUILD}
 )
-
 set(LIBS
   clangCodeGen
   clangDriver
@@ -47,25 +46,26 @@ if (DL_LIBRARY_PATH)
   list(APPEND LIBS dl)
 endif()
 
-add_cling_library(clingUtils OBJECT
-  AST.cpp
-  Diagnostics.cpp
-  ParserStateRAII.cpp
-  Output.cpp
-  Paths.cpp
-  PlatformPosix.cpp
-  PlatformWin.cpp
-  SourceNormalization.cpp
-  UTF8.cpp
-  Validation.cpp
-  global_logger.cpp
-  singleton.cpp
-  LLDBWrapper.cpp
+# set(LLDB_DIR "${LLVM_MAIN_SRC_DIR}/../lldb/cmake/modules")
+
+# find_package(LLDB REQUIRED CONFIG)
+
+# # 如果 find_package 失败，可以手动指定路径
+# if (LLDB_FOUND)
+#   message(STATUS "Found LLDB: ${LLDB_LIBRARY}")
+#   include_directories(${LLDB_INCLUDE_DIRS})
+#   list(APPEND LIBS ${LLDB_LIBRARY})
+# else()
+# #   message(FATAL_ERROR "LLDB not found! Make sure LLDB is installed.")
+# endif()
+
+add_cling_library(clingDebugger OBJECT
+  Debugger.cpp
   LINK_LIBS
   ${LIBS}
 )
 
 if ( MSVC )
-  set_target_properties(clingUtils PROPERTIES
+  set_target_properties(clingDebugger PROPERTIES
   COMPILE_FLAGS "/D_HAS_EXCEPTIONS=0")
 endif ()

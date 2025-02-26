@@ -19,6 +19,7 @@ if(BUILD_SHARED_LIBS)
     clingMetaProcessor
     clingUserInterface
     clingUtils
+    clingDebugger
   )
   add_cling_executable(cling
     cling.cpp
@@ -40,6 +41,8 @@ endif(BUILD_SHARED_LIBS)
 
 set_target_properties(cling
   PROPERTIES ENABLE_EXPORTS 1)
+
+list(APPEND LIBS ${LLDB_LIBRARY})
 
 if(MSVC)
   set_target_properties(cling PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)

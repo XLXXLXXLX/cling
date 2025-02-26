@@ -46,6 +46,7 @@ add_cling_library(clingUserInterface
   clingMetaProcessor
   clingInterpreter
   clingUtils
+  clingDebugger
 )
 
 if( MSVC )

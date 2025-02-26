@@ -7,6 +7,7 @@ set(SOURCES
   $<TARGET_OBJECTS:obj.clingInterpreter>
   $<TARGET_OBJECTS:obj.clingMetaProcessor>
   $<TARGET_OBJECTS:obj.clingUtils>
+  $<TARGET_OBJECTS:obj.clingDebugger>
   ADDITIONAL_HEADERS
   )
 
@@ -50,6 +51,9 @@ find_library(DL_LIBRARY_PATH dl)
 if (DL_LIBRARY_PATH)
   list(APPEND LIBS dl)
 endif()
+
+
+list(APPEND LIBS ${LLDB_LIBRARY})
 
 option(LIBCLING_BUILD_STATIC
   "Build libcling as a static library (in addition to a shared one)" OFF)

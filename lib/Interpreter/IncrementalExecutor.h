@@ -29,8 +29,11 @@
 #include <atomic>
 #include <map>
 #include <memory>
+#include <spdlog/spdlog.h>
 #include <unordered_set>
 #include <vector>
+
+#include"global_logger.h"
 
 namespace clang {
   class DiagnosticsEngine;
@@ -267,12 +270,12 @@ namespace cling {
 
     template <class T>
     ExecutionResult jitInitOrWrapper(llvm::StringRef funcname, T& fun) const {
+      SPDLOG_LOGGER_TRACE(logger, "function: {}",funcname.str());
       void* fun_ptr = m_JIT->getSymbolAddress(funcname, false /*dlsym*/);
 
       // check if there is any unresolved symbol in the list
       if (diagnoseUnresolvedSymbols(funcname, "function") || !fun_ptr)
         return IncrementalExecutor::kExeUnresolvedSymbols;
-
       fun = reinterpret_cast<T>(fun_ptr);
       return IncrementalExecutor::kExeSuccess;
     }
