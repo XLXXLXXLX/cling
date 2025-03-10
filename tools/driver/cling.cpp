@@ -118,12 +118,12 @@ static void runStartupFiles(cling::UserInterface& Ui) {
 }
 
 int main(int argc, char** argv) {
-  init_logger();
-//   init_debugger();
-  logger->info("Logger initialized in main.cpp");
-//   logger->debug("Debugger ID: {}",global_debugger->GetID());
-  logger->info("Welcome to cling!");
-  SPDLOG_LOGGER_TRACE(logger, "main");
+  cling::xlx::initLogger();
+  auto dm = cling::xlx::getDebuggerManager();
+  cling::xlx::logger->info("Logger initialized in main.cpp");
+  cling::xlx::logger->debug("Debugger ID: {}", dm.getDebugger()->GetID());
+  cling::xlx::logger->info("Welcome to cling!");
+  SPDLOG_LOGGER_TRACE(cling::xlx::logger, "main");
 
   llvm::llvm_shutdown_obj shutdownTrigger;
 
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
 #endif
 
   // Set up the interpreter
-  SPDLOG_LOGGER_TRACE(logger, "Set up the interpreter");
+  SPDLOG_LOGGER_TRACE(cling::xlx::logger, "Set up the interpreter");
   cling::Interpreter Interp(argc, argv);
   const cling::InvocationOptions& Opts = Interp.getOptions();
 
@@ -172,13 +172,13 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  SPDLOG_LOGGER_TRACE(logger, "Interp.AddIncludePath");
+  SPDLOG_LOGGER_TRACE(cling::xlx::logger, "Interp.AddIncludePath");
   Interp.AddIncludePath(".");
 
   for (const std::string& Lib : Opts.LibsToLoad)
     Interp.loadFile(Lib);
 
-  SPDLOG_LOGGER_TRACE(logger, "cling::UserInterface Ui(Interp);");
+  SPDLOG_LOGGER_TRACE(cling::xlx::logger, "cling::UserInterface Ui(Interp);");
   cling::UserInterface Ui(Interp);
 
   runStartupFiles(Ui);

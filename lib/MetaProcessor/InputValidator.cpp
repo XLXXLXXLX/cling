@@ -21,7 +21,7 @@ namespace cling {
 
   InputValidator::ValidationResult
   InputValidator::validate(llvm::StringRef line) {
-    SPDLOG_LOGGER_TRACE(logger, "validating {}",line.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "validating {}",line.str());
     ValidationResult Res = kComplete;
     MetaLexer Lex(line.data(), /*skipWhiteSpace=*/true);
     Token Tok, lastNonSpaceTok;

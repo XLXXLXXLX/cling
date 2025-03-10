@@ -41,9 +41,10 @@ endif(BUILD_SHARED_LIBS)
 
 set_target_properties(cling
   PROPERTIES ENABLE_EXPORTS 1)
-
-list(APPEND LIBS ${LLDB_LIBRARY})
-
+if(LLDB_LIBRARY)
+    list(APPEND LIBS ${LLDB_LIBRARY})
+message(STATUS "LIBS for cling:" ${LIBS})
+endif(LLDB_LIBRARY)
 if(MSVC)
   set_target_properties(cling PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 

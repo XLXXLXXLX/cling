@@ -535,7 +535,7 @@ namespace cling {
       Strm << ";\n";
 #endif
 #endif
-
+    // if (false) {
     if (!SyntaxOnly) {
       // Override the helper symbols injected by GenericLLVMIRPlatformSupport,
       // before anything can be emitted.
@@ -831,7 +831,7 @@ namespace cling {
   Interpreter::process(const std::string& input, Value* V /* = 0 */,
                        Transaction** T /* = 0 */,
                        bool disableValuePrinting /* = false*/) {
-    SPDLOG_LOGGER_TRACE(logger, "Interprete {}", input);
+    SPDLOG_LOGGER_TRACE(xlx::logger, "Interprete {}", input);
     if (!isInSyntaxOnlyMode() && m_Opts.CompilerOpts.CUDAHost)
       m_CUDACompiler->process(input);
 
@@ -1166,7 +1166,7 @@ namespace cling {
       Wrapper.insert(0, Input.substr(0, WrapPoint));
       Wrapper.swap(Output);
       WrapPoint += Header.size();
-      SPDLOG_LOGGER_TRACE(logger, "input: {}, output:{}", Input, Output);
+      SPDLOG_LOGGER_TRACE(xlx::logger, "input: {}, output:{}", Input, Output);
       return Output;
     }
     // in-case std::string::npos was passed
@@ -1176,7 +1176,7 @@ namespace cling {
 
   Interpreter::ExecutionResult Interpreter::RunFunction(const FunctionDecl* FD,
                                                         Value* res /*=0*/) {
-    SPDLOG_LOGGER_TRACE(logger, "Running {}", FD->getNameAsString());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "Running {}", FD->getNameAsString());
     if (getDiagnostics().hasErrorOccurred())
       return kExeCompilationError;
 
@@ -1390,8 +1390,7 @@ namespace cling {
   Interpreter::CompilationResult Interpreter::EvaluateInternal(
       const std::string& input, CompilationOptions CO, Value* V, /* = 0 */
       Transaction** /* T = 0 */, size_t wrapPoint /* = 0*/) {
-    SPDLOG_LOGGER_TRACE(logger, "EvaluateInternal {}",
-                        input);
+    SPDLOG_LOGGER_TRACE(xlx::logger, "EvaluateInternal {}", input);
     StateDebuggerRAII stateDebugger(this);
 
     // Wrap the expression

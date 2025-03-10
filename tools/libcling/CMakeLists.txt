@@ -52,8 +52,9 @@ if (DL_LIBRARY_PATH)
   list(APPEND LIBS dl)
 endif()
 
-
-list(APPEND LIBS ${LLDB_LIBRARY})
+if(LLDB_LIBRARY)
+    list(APPEND LIBS ${LLDB_LIBRARY})
+endif(LLDB_LIBRARY)
 
 option(LIBCLING_BUILD_STATIC
   "Build libcling as a static library (in addition to a shared one)" OFF)

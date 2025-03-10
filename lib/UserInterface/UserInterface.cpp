@@ -149,7 +149,7 @@ namespace cling {
 
     while (!Done) {
       try {
-        SPDLOG_LOGGER_TRACE(logger, "flushing");
+        SPDLOG_LOGGER_TRACE(xlx::logger, "flushing");
         m_MetaProcessor->getOuts().flush();
         {
           MetaProcessor::MaybeRedirectOutputRAII RAII(*m_MetaProcessor);

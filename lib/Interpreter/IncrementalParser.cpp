@@ -486,7 +486,7 @@ namespace cling {
 
   Transaction*
   IncrementalParser::beginTransaction(const CompilationOptions& Opts) {
-    SPDLOG_LOGGER_TRACE(logger, "beginTransaction");
+    SPDLOG_LOGGER_TRACE(xlx::logger, "beginTransaction");
     Transaction* OldCurT = m_Consumer->getTransaction();
     Transaction* NewCurT = m_TransactionPool->takeTransaction(m_CI->getSema());
     NewCurT->setCompilationOpts(Opts);
@@ -504,7 +504,7 @@ namespace cling {
 
   IncrementalParser::ParseResultTransaction
   IncrementalParser::endTransaction(Transaction* T) {
-    SPDLOG_LOGGER_TRACE(logger, "endTransaction");
+    SPDLOG_LOGGER_TRACE(xlx::logger, "endTransaction");
     assert(T && "Null transaction!?");
     assert(T->getState() == Transaction::kCollecting);
 
@@ -544,7 +544,7 @@ namespace cling {
       // If a nested transaction the active one should be its parent
       // from now on. FIXME: Merge conditional with commitTransaction
       if (T->isNestedTransaction()) {
-        SPDLOG_LOGGER_TRACE(logger, "Nested transaction");
+        SPDLOG_LOGGER_TRACE(xlx::logger, "Nested transaction");
         m_Consumer->setTransaction(T->getParent());
       } else {
         m_Consumer->setTransaction((Transaction*)0);
@@ -844,7 +844,7 @@ namespace cling {
   IncrementalParser::ParseResultTransaction
   IncrementalParser::Compile(llvm::StringRef input,
                              const CompilationOptions& Opts) {
-    SPDLOG_LOGGER_TRACE(logger, "Compile: {}", input.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "Compile: {}", input.str());
     Transaction* CurT = beginTransaction(Opts);
     EParseResult ParseRes = ParseInternal(input);
 
@@ -861,7 +861,7 @@ namespace cling {
   // Add the input to the memory buffer, parse it, and add it to the AST.
   IncrementalParser::EParseResult
   IncrementalParser::ParseInternal(llvm::StringRef input) {
-    SPDLOG_LOGGER_TRACE(logger, "ParseInternal: {}", input.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "ParseInternal: {}", input.str());
     if (input.empty())
       return IncrementalParser::kSuccess;
 
@@ -892,8 +892,8 @@ namespace cling {
                                                           source_name.str()));
     char* MBStart = MB->getBufferStart();
     memcpy(MBStart, input.data(), InputSize);
-    SPDLOG_LOGGER_TRACE(logger, "input.data(): {}", input.data());
-    SPDLOG_LOGGER_TRACE(logger, "MBStart: {}", MBStart);
+    SPDLOG_LOGGER_TRACE(xlx::logger, "input.data(): {}", input.data());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "MBStart: {}", MBStart);
     MBStart[InputSize] = '\n';
 
     SourceManager& SM = getCI()->getSourceManager();
@@ -911,7 +911,7 @@ namespace cling {
                                               0 /* mod time*/);
     SM.overrideFileContents(FE, std::move(MB));
     FID = SM.createFileID(FE, NewLoc, SrcMgr::C_User);
-    SPDLOG_LOGGER_TRACE(logger, "FID.getHashValue: {}",
+    SPDLOG_LOGGER_TRACE(xlx::logger, "FID.getHashValue: {}",
                         FID.getHashValue());
     if (CO.CodeCompletionOffset != -1) {
       // The completion point is set one a 1-based line/column numbering.

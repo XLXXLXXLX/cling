@@ -2,12 +2,24 @@
 #define DEBUGGER_H
 
 #include <lldb/API/SBDebugger.h>
+#include <lldb/API/SBProcess.h>
 #include <memory>
 
-// 声明全局 debugger 对象
-extern std::shared_ptr<lldb::SBDebugger> global_debugger;
+namespace cling {
+  namespace xlx {
 
-// 初始化 debugger 的函数
-void init_debugger();
+    class DebuggerManager {
+      std::shared_ptr<lldb::SBDebugger> debugger;
+      std::shared_ptr<lldb::SBTarget> target;
+      std::shared_ptr<lldb::SBProcess> process;
 
+    public:
+      DebuggerManager();
+      auto getDebugger() { return debugger; }
+      auto getTarget() { return target; }
+      auto getProcess() { return process; }
+    };
+    DebuggerManager& getDebuggerManager();
+  } // namespace xlx
+} // namespace cling
 #endif // DEBUGGER_H

@@ -709,7 +709,7 @@ IncrementalJIT::addOrReplaceDefinition(StringRef Name,
 }
 
 void* IncrementalJIT::getSymbolAddress(StringRef Name, bool IncludeHostSymbols){
-  SPDLOG_LOGGER_TRACE(logger, "Name: {}",Name.str());
+  SPDLOG_LOGGER_TRACE(xlx::logger, "Name: {}",Name.str());
   std::unique_lock<SharedAtomicFlag> G(SkipHostProcessLookup, std::defer_lock);
   if (!IncludeHostSymbols)
     G.lock();
@@ -739,7 +739,7 @@ void* IncrementalJIT::getSymbolAddress(StringRef Name, bool IncludeHostSymbols){
     consumeError(Symbol.takeError());
     return nullptr;
   }
-
+  
   return (Symbol.get()).toPtr<void*>();
 }
 

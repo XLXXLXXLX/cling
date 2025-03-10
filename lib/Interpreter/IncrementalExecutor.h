@@ -270,7 +270,7 @@ namespace cling {
 
     template <class T>
     ExecutionResult jitInitOrWrapper(llvm::StringRef funcname, T& fun) const {
-      SPDLOG_LOGGER_TRACE(logger, "function: {}",funcname.str());
+      SPDLOG_LOGGER_TRACE(xlx::logger, "function: {}",funcname.str());
       void* fun_ptr = m_JIT->getSymbolAddress(funcname, false /*dlsym*/);
 
       // check if there is any unresolved symbol in the list

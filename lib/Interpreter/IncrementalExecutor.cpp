@@ -209,7 +209,7 @@ freeCallersOfUnresolvedSymbols(llvm::SmallVectorImpl<llvm::Function*>&
   IncrementalExecutor::executeWrapper(llvm::StringRef function,
                                       Value* returnValue /* =0*/) const {
     // Set the value to cling::invalid.
-    SPDLOG_LOGGER_TRACE(logger, "function: {}", function.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "function: {}", function.str());
     if (returnValue)
       *returnValue = Value();
 
@@ -219,9 +219,9 @@ freeCallersOfUnresolvedSymbols(llvm::SmallVectorImpl<llvm::Function*>&
     if (res != kExeSuccess)
       return res;
     EnterUserCodeRAII euc(m_Callbacks);
-    SPDLOG_LOGGER_TRACE(logger, "run function");
+    SPDLOG_LOGGER_TRACE(xlx::logger, "run function");
     (*fun)(returnValue);
-    SPDLOG_LOGGER_TRACE(logger, "run function done");
+    SPDLOG_LOGGER_TRACE(xlx::logger, "run function done");
 
     flushOutBuffers();
     return kExeSuccess;

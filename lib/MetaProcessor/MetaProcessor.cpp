@@ -298,7 +298,7 @@ namespace cling {
                              Interpreter::CompilationResult& compRes,
                              Value* result,
                              bool disableValuePrinting /* = false */) {
-    SPDLOG_LOGGER_TRACE(logger, "process: {}",input_line.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "process: {}",input_line.str());
     if (result)
       *result = Value();
     compRes = Interpreter::kSuccess;
@@ -310,7 +310,7 @@ namespace cling {
     if (input_line.empty() ||
         (input_line.size() == 1 && input_line.front() == '\n')) {
       // just a blank line, nothing to do.
-      SPDLOG_LOGGER_TRACE(logger, "process: blank line");
+      SPDLOG_LOGGER_TRACE(xlx::logger, "process: blank line");
       return expectedIndent;
     }
 
