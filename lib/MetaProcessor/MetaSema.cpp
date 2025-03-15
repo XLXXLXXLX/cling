@@ -35,6 +35,8 @@
 #include <cctype>
 #include <cstdlib>
 
+#include "global_logger.h"
+
 namespace {
   ///\brief Make a valid C++ identifier, replacing illegal characters in `S'
   /// by '_'. It does not take into account valid Unicode ranges.
@@ -314,6 +316,7 @@ namespace cling {
   }
 
   void MetaSema::actOnhelpCommand() const {
+    SPDLOG_LOGGER_TRACE(xlx::logger, "actOnhelpCommand");
     std::string& metaString = m_Interpreter.getOptions().MetaString;
     llvm::raw_ostream& outs = m_MetaProcessor.getOuts();
     outs << "\n Cling (C/C++ interpreter) meta commands usage\n"

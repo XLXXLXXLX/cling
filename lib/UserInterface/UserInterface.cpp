@@ -36,12 +36,11 @@ namespace {
     const cling::Interpreter& m_ParentInterpreter;
 
   public:
-    UITabCompletion(const cling::Interpreter& Parent) :
-                    m_ParentInterpreter(Parent) {}
+    UITabCompletion(const cling::Interpreter& Parent)
+        : m_ParentInterpreter(Parent) {}
     ~UITabCompletion() {}
 
-    bool Complete(textinput::Text& Line /*in+out*/,
-                  size_t& Cursor /*in+out*/,
+    bool Complete(textinput::Text& Line /*in+out*/, size_t& Cursor /*in+out*/,
                   textinput::EditorRange& R /*out*/,
                   std::vector<std::string>& Completions /*out*/) override {
       m_ParentInterpreter.codeComplete(Line.GetText(), Cursor, Completions);
@@ -67,7 +66,7 @@ namespace {
       delete m_Display;
     }
 
-    textinput::TextInput* operator -> () { return &m_Input; }
+    textinput::TextInput* operator->() { return &m_Input; }
   };
 
   llvm::SmallString<512> GetHistoryFilePath() {
@@ -108,7 +107,7 @@ namespace {
     cling::errs() << "Failed to create command history file\n";
     return {};
   }
-}
+} // namespace
 
 namespace cling {
 
@@ -162,31 +161,30 @@ namespace cling {
 
         cling::Interpreter::CompilationResult compRes;
         const int indent = m_MetaProcessor->process(Line, compRes);
-
+        SPDLOG_LOGGER_TRACE(xlx::logger, "indent: {}", indent);
         // Quit requested?
         if (indent < 0)
           break;
 
         Prompt.replace(7, std::string::npos,
-           m_MetaProcessor->getInterpreter().isRawInputEnabled() ? "! " : "$ ");
+                       m_MetaProcessor->getInterpreter().isRawInputEnabled()
+                           ? "! "
+                           : "$ ");
 
         // Continuation requested?
         if (indent > 0) {
           Prompt.append(1, '?');
           Prompt.append(indent * 3, ' ');
         }
-      }
-      catch(InterpreterException& e) {
+      } catch (InterpreterException& e) {
         if (!e.diagnose()) {
           cling::errs() << ">>> Caught an interpreter exception!\n"
                         << ">>> " << e.what() << '\n';
         }
-      }
-      catch(std::exception& e) {
+      } catch (std::exception& e) {
         cling::errs() << ">>> Caught a std::exception!\n"
-                     << ">>> " << e.what() << '\n';
-      }
-      catch(...) {
+                      << ">>> " << e.what() << '\n';
+      } catch (...) {
         cling::errs() << "Exception occurred. Recovering...\n";
       }
     }
@@ -195,20 +193,20 @@ namespace cling {
 
   void UserInterface::PrintLogo() {
     llvm::raw_ostream& outs = m_MetaProcessor->getOuts();
-    const clang::LangOptions& LangOpts
-      = m_MetaProcessor->getInterpreter().getCI()->getLangOpts();
+    const clang::LangOptions& LangOpts =
+        m_MetaProcessor->getInterpreter().getCI()->getLangOpts();
     if (LangOpts.CPlusPlus) {
       outs << "\n"
-        "****************** CLING ******************\n"
-        "* Type C++ code and press enter to run it *\n"
-        "*             Type .q to exit             *\n"
-        "*******************************************\n";
+              "****************** CLING ******************\n"
+              "* Type C++ code and press enter to run it *\n"
+              "*             Type .q to exit             *\n"
+              "*******************************************\n";
     } else {
       outs << "\n"
-        "***************** CLING *****************\n"
-        "* Type C code and press enter to run it *\n"
-        "*            Type .q to exit            *\n"
-        "*****************************************\n";
+              "***************** CLING *****************\n"
+              "* Type C code and press enter to run it *\n"
+              "*            Type .q to exit            *\n"
+              "*****************************************\n";
     }
   }
 } // end namespace cling

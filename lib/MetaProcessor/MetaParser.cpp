@@ -23,6 +23,8 @@
 
 #include <optional>
 
+#include "global_logger.h"
+
 namespace cling {
 
   MetaParser::MetaParser(MetaSema &Actions, llvm::StringRef Line) :
@@ -107,6 +109,8 @@ namespace cling {
         return false;
       consumeToken();
     }
+    
+    SPDLOG_LOGGER_TRACE(xlx::logger, "isCommandSymbol: true");
     return true;
   }
 
@@ -563,6 +567,7 @@ namespace cling {
     if (Tok.is(tok::quest_mark) ||
         (Tok.is(tok::ident) && Tok.getIdent().equals("help"))) {
       m_Actions.actOnhelpCommand();
+      SPDLOG_LOGGER_TRACE(xlx::logger, "ishelpCommand: true");
       return true;
     }
     return false;

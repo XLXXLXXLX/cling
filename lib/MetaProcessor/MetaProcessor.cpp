@@ -9,10 +9,10 @@
 
 #include "cling/MetaProcessor/MetaProcessor.h"
 #include "global_logger.h"
+#include "cling/MetaProcessor/Display.h"
 #include "cling/MetaProcessor/InputValidator.h"
 #include "cling/MetaProcessor/MetaParser.h"
 #include "cling/MetaProcessor/MetaSema.h"
-#include "cling/MetaProcessor/Display.h"
 
 #include "cling/Interpreter/Interpreter.h"
 #include "cling/Interpreter/Value.h"
@@ -26,10 +26,10 @@
 #include "llvm/BinaryFormat/Magic.h"
 #include "llvm/Support/Path.h"
 
+#include <cctype>
+#include <cstdlib>
 #include <fcntl.h>
 #include <fstream>
-#include <cstdlib>
-#include <cctype>
 #include <spdlog/spdlog.h>
 #include <sstream>
 #include <stdio.h>
@@ -37,7 +37,7 @@
 #include <unistd.h>
 #else
 #include <io.h>
-#define STDIN_FILENO  0
+#define STDIN_FILENO 0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 #endif
@@ -52,7 +52,7 @@ namespace cling {
       // Flush now or can drop the buffer when dup2 is called with Fd later.
       // This seems only neccessary when piping stdout or stderr, but do it
       // for ttys to avoid over complicated code for minimal benefit.
-      ::fflush(Fd==STDOUT_FILENO ? stdout : stderr);
+      ::fflush(Fd == STDOUT_FILENO ? stdout : stderr);
 
       if (Bak == kInvalidFD)
         Bak = ::dup(Fd);
@@ -65,8 +65,8 @@ namespace cling {
       MetaProcessor::RedirectionScope Scope;
       bool Close;
 
-      Redirect(std::string file, bool append, RedirectionScope S, int* Baks) :
-        FD(-1), Scope(S), Close(false) {
+      Redirect(std::string file, bool append, RedirectionScope S, int* Baks)
+          : FD(-1), Scope(S), Close(false) {
         if (S & kSTDSTRM) {
           // Remove the flag from Scope, we don't need it anymore
           Scope = RedirectionScope(Scope & ~kSTDSTRM);
@@ -138,8 +138,9 @@ namespace cling {
     }
 
     // Restore stdstream from backup and close the backup
-    void close(int &oldfd, int newfd) {
-      assert((newfd == STDOUT_FILENO || newfd == STDERR_FILENO) && "Not std FD");
+    void close(int& oldfd, int newfd) {
+      assert((newfd == STDOUT_FILENO || newfd == STDERR_FILENO) &&
+             "Not std FD");
       assert(oldfd == m_Bak[newfd == STDERR_FILENO] && "Not backup FD");
       if (oldfd != kInvalidFD) {
         dup2(oldfd, newfd, "RedirectOutput::close");
@@ -148,15 +149,15 @@ namespace cling {
       }
     }
 
-    int restore(int FD, FILE *F, MetaProcessor::RedirectionScope Flag,
-                int &bakFD) {
+    int restore(int FD, FILE* F, MetaProcessor::RedirectionScope Flag,
+                int& bakFD) {
       // If no backup, we have never redirected the file, so nothing to restore
       if (bakFD != kInvalidFD) {
         // Find the last redirect for the scope, and restore redirection to it
         for (RedirectStack::const_reverse_iterator it = m_Stack.rbegin(),
                                                    e = m_Stack.rend();
              it != e; ++it) {
-          const Redirect *R = (*it).get();
+          const Redirect* R = (*it).get();
           if (R->Scope & Flag) {
             dup2(R->FD, FD, "RedirectOutput::restore");
             return R->FD;
@@ -171,8 +172,8 @@ namespace cling {
     }
 
   public:
-    RedirectOutput() : m_CurStdOut(kInvalidFD),
-      m_TTY(::isatty(STDOUT_FILENO) ? 1 : 0) {
+    RedirectOutput()
+        : m_CurStdOut(kInvalidFD), m_TTY(::isatty(STDOUT_FILENO) ? 1 : 0) {
       for (unsigned i = 0; i < kNumRedirects; ++i)
         m_Bak[i] = kInvalidFD;
     }
@@ -208,7 +209,7 @@ namespace cling {
         MetaProcessor::RedirectionScope lScope = scope;
         SmallVector<RedirectStack::iterator, 2> Remove;
         for (auto it = m_Stack.rbegin(), e = m_Stack.rend(); it != e; ++it) {
-          Redirect *R = (*it).get();
+          Redirect* R = (*it).get();
           const unsigned Match = R->Scope & lScope;
           if (Match) {
 #ifdef _WIN32
@@ -268,14 +269,12 @@ namespace cling {
         dup2(m_CurStdOut, STDOUT_FILENO, "RedirectOutput::resetStdOut");
     }
 
-    bool empty() const {
-      return m_Stack.empty();
-    }
+    bool empty() const { return m_Stack.empty(); }
   };
 
   MetaProcessor::MaybeRedirectOutputRAII::MaybeRedirectOutputRAII(
-                                                             MetaProcessor &P) :
-    m_MetaProcessor(P) {
+      MetaProcessor& P)
+      : m_MetaProcessor(P) {
     if (m_MetaProcessor.m_RedirectOutput)
       m_MetaProcessor.m_RedirectOutput->resetStdOut(true);
   }
@@ -286,19 +285,18 @@ namespace cling {
   }
 
   MetaProcessor::MetaProcessor(Interpreter& interp, raw_ostream& outs)
-    : m_Interp(interp), m_Outs(&outs) {
+      : m_Interp(interp), m_Outs(&outs) {
     m_InputValidator.reset(new InputValidator());
     m_MetaSema.reset(new MetaSema(interp, *this));
   }
 
-  MetaProcessor::~MetaProcessor() {
-  }
+  MetaProcessor::~MetaProcessor() {}
 
   int MetaProcessor::process(llvm::StringRef input_line,
                              Interpreter::CompilationResult& compRes,
                              Value* result,
                              bool disableValuePrinting /* = false */) {
-    SPDLOG_LOGGER_TRACE(xlx::logger, "process: {}",input_line.str());
+    SPDLOG_LOGGER_TRACE(xlx::logger, "input_line: {}", input_line.str());
     if (result)
       *result = Value();
     compRes = Interpreter::kSuccess;
@@ -318,15 +316,15 @@ namespace cling {
     MetaParser parser(*m_MetaSema, input_line);
     MetaSema::ActionResult actionResult = MetaSema::AR_Success;
     if (!m_InputValidator->inBlockComment() &&
-         parser.isMetaCommand(actionResult, result)) {
-
+        parser.isMetaCommand(actionResult, result)) {
+      SPDLOG_LOGGER_TRACE(xlx::logger, "process: meta command");
       if (parser.isQuitRequested())
         return -1;
 
       if (actionResult != MetaSema::AR_Success)
         compRes = Interpreter::kFailure;
-       // ExpectedIndent might have changed after meta command.
-       return m_InputValidator->getExpectedIndent();
+      // ExpectedIndent might have changed after meta command.
+      return m_InputValidator->getExpectedIndent();
     }
 
     // Check if the current statement is now complete. If not, return to
@@ -348,9 +346,7 @@ namespace cling {
     return 0;
   }
 
-  void MetaProcessor::cancelContinuation() const {
-    m_InputValidator->reset();
-  }
+  void MetaProcessor::cancelContinuation() const { m_InputValidator->reset(); }
 
   bool MetaProcessor::awaitingMoreInput() const {
     return m_InputValidator->getLastResult() ==
@@ -364,15 +360,14 @@ namespace cling {
   static Interpreter::CompilationResult reportIOErr(llvm::StringRef File,
                                                     const char* What) {
     cling::errs() << "Error in cling::MetaProcessor: "
-          "cannot " << What << " input: '" << File << "'\n";
+                     "cannot "
+                  << What << " input: '" << File << "'\n";
     return Interpreter::kFailure;
   }
 
   Interpreter::CompilationResult
-  MetaProcessor::readInputFromFile(llvm::StringRef filename,
-                                   Value* result,
-                                   size_t posOpenCurly,
-                                   bool lineByLine) {
+  MetaProcessor::readInputFromFile(llvm::StringRef filename, Value* result,
+                                   size_t posOpenCurly, bool lineByLine) {
 
     // FIXME: This will fail for Unicode BOMs (and seems really weird)
     {
@@ -387,9 +382,8 @@ namespace cling {
       // Binary files < 300 bytes are rare, and below newlines etc make the
       // heuristic unreliable.
       if (!in.fail() && readMagic >= 300) {
-        llvm::StringRef magicStr(magic,in.gcount());
-        llvm::file_magic fileType
-          = llvm::identify_magic(magicStr);
+        llvm::StringRef magicStr(magic, in.gcount());
+        llvm::file_magic fileType = llvm::identify_magic(magicStr);
         if (fileType != llvm::file_magic::unknown &&
             fileType != llvm::file_magic::tapi_file)
           return reportIOErr(filename, "read from binary");
@@ -398,7 +392,7 @@ namespace cling {
         for (size_t i = 0; i < readMagic; ++i)
           if (isprint(magic[i]))
             ++printable;
-        if (10 * printable <  5 * readMagic) {
+        if (10 * printable < 5 * readMagic) {
           // 50% printable for ASCII files should be a safe guess.
           return reportIOErr(filename, "won't read from likely binary");
         }
@@ -437,14 +431,15 @@ namespace cling {
     }
 
     if (posOpenCurly != (size_t)-1 && !content.empty()) {
-      assert(content[posOpenCurly] == '{'
-             && "No curly at claimed position of opening curly!");
+      assert(content[posOpenCurly] == '{' &&
+             "No curly at claimed position of opening curly!");
       // hide the curly brace:
       content[posOpenCurly] = ' ';
       // and the matching closing '}'
       size_t posCloseCurly = content.find_last_not_of(whitespace);
       if (posCloseCurly != std::string::npos) {
-        if (content[posCloseCurly] == ';' && content[posCloseCurly-1] == '}') {
+        if (content[posCloseCurly] == ';' &&
+            content[posCloseCurly - 1] == '}') {
           content[posCloseCurly--] = ' '; // replace ';' and enter next if
         }
         if (content[posCloseCurly] == '}') {
@@ -454,10 +449,10 @@ namespace cling {
           if (posBlockClose != std::string::npos) {
             content[posBlockClose] = ' '; // replace '}'
           }
-          std::string::size_type posComment
-            = content.find_first_not_of(whitespace, posBlockClose);
-          if (posComment != std::string::npos
-              && content[posComment] == '/' && content[posComment+1] == '/') {
+          std::string::size_type posComment =
+              content.find_first_not_of(whitespace, posBlockClose);
+          if (posComment != std::string::npos && content[posComment] == '/' &&
+              content[posComment + 1] == '/') {
             // More text (comments) are okay after the last '}', but
             // we can not easily find it to remove it (so we need to upgrade
             // this code to better handle the case with comments or
@@ -471,14 +466,14 @@ namespace cling {
             // By putting the '{' back, we keep the code as consistent as
             // the user wrote it ... but we should still warn that we not
             // goint to treat this file an unamed macro.
-            cling::errs()
-              << "Warning in cling::MetaProcessor: can not find the closing '}', "
-              << llvm::sys::path::filename(filename)
-              << " is not handled as an unamed script!\n";
+            cling::errs() << "Warning in cling::MetaProcessor: can not find "
+                             "the closing '}', "
+                          << llvm::sys::path::filename(filename)
+                          << " is not handled as an unamed script!\n";
           } // did not find "//"
-        } // remove comments after the trailing '}'
-      } // find '}'
-    } // ignore outermost block
+        }   // remove comments after the trailing '}'
+      }     // find '}'
+    }       // ignore outermost block
 
     m_CurrentlyExecutingFile = filename;
     bool topmost = !m_TopExecutingFile.data();
@@ -498,8 +493,9 @@ namespace cling {
     if (content.back() != ';')
       content.append(";");
 
-    Interpreter::InputFlagsRAII RAII(m_Interp, Interpreter::kInputFromFile |
-                                               (lineByLine ? Interpreter::kIFFLineByLine : 0));
+    Interpreter::InputFlagsRAII RAII(
+        m_Interp, Interpreter::kInputFromFile |
+                      (lineByLine ? Interpreter::kIFFLineByLine : 0));
     Interpreter::CompilationResult ret = Interpreter::kSuccess;
     if (lineByLine) {
       int rslt = 0;
@@ -512,8 +508,8 @@ namespace cling {
       }
       if (rslt) {
         cling::errs() << "Error in cling::MetaProcessor: file "
-                     << llvm::sys::path::filename(filename)
-                     << " is incomplete (missing parenthesis or similar)!\n";
+                      << llvm::sys::path::filename(filename)
+                      << " is incomplete (missing parenthesis or similar)!\n";
       }
     } else
       ret = m_Interp.process(content, result);
