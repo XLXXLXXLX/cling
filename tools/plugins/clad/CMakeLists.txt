@@ -46,10 +46,6 @@ if (CMAKE_CXX_STANDARD)
   list(APPEND _clad_extra_cmake_args -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD})
 endif(CMAKE_CXX_STANDARD)
 
-if (Clang_DIR)
-  list(APPEND _clad_extra_cmake_args -DClang_DIR=${Clang_DIR} -DClang_CONFIG_EXTRA_PATH_HINTS=${Clang_Config_ExtraPathHints})
-endif(Clang_DIR)
-
 if (LLVM_FORCE_USE_OLD_TOOLCHAIN)
   list(APPEND _clad_extra_cmake_args -DLLVM_FORCE_USE_OLD_TOOLCHAIN=${LLVM_FORCE_USE_OLD_TOOLCHAIN})
 endif(LLVM_FORCE_USE_OLD_TOOLCHAIN)
@@ -68,8 +64,10 @@ set(_clad_extra_settings
 # If the CLAD_SOURCE_DIR variable is defined in the CMake configuration, we're
 # skipping the download of the repository and use the passed directory.
 if (DEFINED CLAD_SOURCE_DIR)
-  list(APPEND _clad_extra_settings DOWNLOAD_COMMAND "")
   list(APPEND _clad_extra_settings SOURCE_DIR ${CLAD_SOURCE_DIR})
+else()
+  list(APPEND _clad_extra_settings GIT_REPOSITORY https://github.com/vgvassilev/clad.git)
+  list(APPEND _clad_extra_settings GIT_TAG v1.7)
 endif()
 
 #list(APPEND _clad_patches_list "patch1.patch" "patch2.patch")
@@ -82,8 +80,6 @@ endif()
 
 ExternalProject_Add(
   clad
-  GIT_REPOSITORY https://github.com/vgvassilev/clad.git
-  GIT_TAG v1.7
   UPDATE_COMMAND ""
   PATCH_COMMAND ${_clad_patch_command}
   CMAKE_ARGS -G ${CMAKE_GENERATOR}
@@ -94,7 +90,7 @@ ExternalProject_Add(
              -DCMAKE_CXX_FLAGS=${CLAD_CXX_FLAGS}
              -DCMAKE_INSTALL_PREFIX=${clad_install_dir}/plugins
              -DLLVM_DIR=${LLVM_BINARY_DIR}
-             -DCLANG_INCLUDE_DIRS=${CLANG_INCLUDE_DIRS}
+             -DClang_DIR=${CLANG_CMAKE_DIR}
              ${_clad_extra_cmake_args}
   # FIXME
   # Building with 1 core is a temporary workaround for #16654 and has to be 

@@ -264,10 +264,10 @@ def fetch_llvm(llvm_revision):
 def llvm_flag_setter(llvm_dir, llvm_config_path):
     flags = "-DLLVM_BINARY_DIR={0} -DLLVM_CONFIG={1} -DLLVM_LIBRARY_DIR={2} -DLLVM_MAIN_INCLUDE_DIR={3} -DLLVM_TABLEGEN_EXE={4} \
                   -DLLVM_TOOLS_BINARY_DIR={5} -DLLVM_TOOL_CLING_BUILD=ON".format(
-        llvm_dir, llvm_config_path, os.path.join(llvm_dir, 'lib'),
-        os.path.join(llvm_dir, 'include'),
-        os.path.join(llvm_dir, 'bin', 'llvm-tblgen'),
-        os.path.join(llvm_dir, 'bin'))
+        llvm_dir, llvm_config_path, os.path.join(srcdir, 'lib'),
+        os.path.join(srcdir, 'include'),
+        os.path.join(srcdir, 'bin', 'llvm-tblgen'),
+        os.path.join(srcdir, 'bin'))
     if args['with_verbose_output']:
         flags += " -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
     return flags
@@ -287,12 +287,10 @@ def download_llvm_binary():
         subprocess.call("sudo -H {0} -m pip install lit".format(
             sys.executable),
                         shell=True)
-        llvm_config_path = exec_subprocess_check_output(
-            "which llvm-config-{0}".format(llvm_vers), workdir)
+        llvm_config_path = exec_subprocess_check_output("find . -name llvm-config", workdir)
         if llvm_config_path != '' and tar_required is False:
-            llvm_dir = os.path.join("/usr", "lib", "llvm-" + llvm_vers)
-            if llvm_config_path[-1:] == "\n":
-                llvm_config_path = llvm_config_path[:-1]
+            llvm_dir = os.path.join(srcdir, "bin")
+            llvm_config_path = os.path.join(llvm_dir, "llvm-config")
             llvm_flags = llvm_flag_setter(llvm_dir, llvm_config_path)
         else:
             tar_required = True
@@ -313,23 +311,16 @@ def download_llvm_binary():
         )
     if tar_required:
         if DIST == 'Ubuntu':
-            llvm_dir = os.path.join("/usr", "lib", "llvm-" + llvm_vers)
+            llvm_dir = os.path.join(srcdir, "bin")
+            llvm_config_path = os.path.join(llvm_dir, "llvm-config")
         elif DIST == 'MacOSX':
             llvm_dir = os.path.join("/opt", "local", "libexec",
                                     "llvm-" + llvm_vers)
         llvm_flags = llvm_flag_setter(llvm_dir, llvm_config_path)
-        if DIST == "Ubuntu" and REV == '16.04' and is_os_64bit():
-            download_link = 'http://releases.llvm.org/5.0.2/clang+llvm-5.0.2-x86_64-linux-gnu-ubuntu-16.04.tar.xz'
+        if DIST == "Ubuntu" and REV == '20.04' and is_os_64bit():
+            download_link = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz'
             wget(url=download_link, out_dir=workdir)
-            extract_tar(
-                srcdir,
-                'clang+llvm-5.0.2-x86_64-linux-gnu-ubuntu-16.04.tar.xz')
-        elif DIST == "Ubuntu" and REV == '14.04' and is_os_64bit():
-            download_link = 'http://releases.llvm.org/5.0.2/clang+llvm-5.0.2-x86_64-linux-gnu-ubuntu-14.04.tar.xz'
-            wget(url=download_link, out_dir=workdir)
-            extract_tar(
-                srcdir,
-                'clang+llvm-5.0.2-x86_64-linux-gnu-ubuntu-14.04.tar.xz')
+            extract_tar(srcdir, 'clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz')
         elif DIST == 'MacOSX' and is_os_64bit():
             download_link = 'http://releases.llvm.org/5.0.2/clang+llvm-5.0.2-x86_64-apple-darwin.tar.xz'
             wget(url=download_link, out_dir=workdir)
@@ -1016,8 +1007,8 @@ def tarball_deb():
 
 
 def debianize():
-    SIGNING_USER = exec_subprocess_check_output('gpg --fingerprint | grep uid | sed s/"uid *"//g',
-                                                CLING_SRC_DIR).strip()
+    SIGNING_USER = exec_subprocess_check_output('sh -c "gpg --fingerprint | grep uid | sed \'s/uid *//g\'"',
+                                                 CLING_SRC_DIR).strip()
 
     box_draw("Set up the debian directory")
     print("Create directory: debian")
@@ -1066,10 +1057,8 @@ exit 0
     f = open(os.path.join(prefix, 'debian', 'cling.install'), 'w')
     template = '''
 bin/* /usr/bin
-docs/* /usr/share/doc
 include/* /usr/include
 lib/* /usr/lib
-share/* /usr/share
 '''
     f.write(template.strip())
     f.close()
@@ -1186,10 +1175,11 @@ cling (%s-1) unstable; urgency=low
 ''' % (VERSION, VERSION)
     f.write(template.lstrip())
     f.close()
-
+    
+    STABLE_FLAG = ''
     if '~dev' in VERSION:
         TAG = str(float(VERSION[:VERSION.find('~')]) - 0.1)
-        template = exec_subprocess_check_output('git log v' + TAG + '...HEAD --format="  * %s" | fmt -s', CLING_SRC_DIR)
+        template = exec_subprocess_check_output('sh -c "git log v' + TAG + '...HEAD --format=\'  * %s\' | fmt -s"', CLING_SRC_DIR)
 
         f = open(os.path.join(prefix, 'debian', 'changelog'), 'a+')
         f.write(template)
@@ -1208,14 +1198,14 @@ cling (%s-1) unstable; urgency=low
 
     while TAG != '0.1':
         CMP = TAG
-        TAG = str(float(TAG) - 0.1)
+        TAG = str(round(float(TAG) - 0.1, 1))
         if STABLE_FLAG != '1':
             f = open(os.path.join(prefix, 'debian', 'changelog'), 'a+')
             f.write('cling (' + TAG + '-1) unstable; urgency=low\n')
             f.close()
             STABLE_FLAG = '1'
-            template = exec_subprocess_check_output('git log v' + CMP + '...v' + TAG + '--format="  * %s" | fmt -s',
-                                                    CLING_SRC_DIR)
+            template = exec_subprocess_check_output('sh -c "git log v' + CMP + '...v' + TAG + ' --format=\'  * %s\' | fmt -s"',
+                                                     CLING_SRC_DIR)
 
             f = open(os.path.join(prefix, 'debian', 'changelog'), 'a+')
             f.write(template)
@@ -1233,11 +1223,11 @@ cling (%s-1) unstable; urgency=low
     template = exec_subprocess_check_output('git log v0.1 --format="  * %s%n -- %an <%ae>  %cD%n"', CLING_SRC_DIR)
 
     f = open(os.path.join(prefix, 'debian', 'changelog'), 'a+')
-    f.write(template.encode('utf-8'))
+    f.write(template)
     f.close()
 
     box_draw("Run debuild to create Debian package")
-    exec_subprocess_call('debuild', prefix)
+    exec_subprocess_call('debuild -us -uc', prefix)
 
 
 ###############################################################################
@@ -2312,6 +2302,18 @@ if bool(args['current_dev']) or bool(args['current_dev_build']):
     travis_fold_end("git-clone")
 
     revision = set_version()
+
+    progress_dir = exec_subprocess_check_output('find . -name ProgressBar.py', srcdir)
+    if progress_dir[-1:] == "\n":
+                progress_dir = progress_dir[:-1]
+    with open(os.path.join(srcdir, progress_dir), 'r+') as file:
+        file.write("from importlib import reload")
+        newline=[]
+        for word in file.readlines():        
+            newline.append(word.replace("sys.setdefaultencoding('utf8')","# sys.setdefaultencoding('utf8')"))  
+        for line in newline:
+            file.writelines(line)
+
     if args['current_dev'] == 'tar':
         if OS == 'Windows':
             get_win_dep()

@@ -138,7 +138,7 @@ namespace cling {
   // FilePath := AnyString
   // AnyString := .*^('\t' Comment)
   bool MetaParser::isLCommand(MetaSema::ActionResult& actionResult) {
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("L")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "L") {
       consumeAnyStringToken(tok::comment);
       llvm::StringRef filePath;
       if (getCurTok().is(tok::raw_ident)) {
@@ -161,7 +161,7 @@ namespace cling {
   // AnyString := .*^('\t' Comment)
   bool MetaParser::isTCommand(MetaSema::ActionResult& actionResult) {
     bool result = false;
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("T")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "T") {
       consumeAnyStringToken();
       if (getCurTok().is(tok::raw_ident)) {
         std::string inputFile = getCurTok().getIdent().str();
@@ -275,8 +275,8 @@ namespace cling {
     if (resultValue)
       *resultValue = Value();
     const Token& Tok = getCurTok();
-    if (Tok.is(tok::ident) && (Tok.getIdent().equals("x")
-                               || Tok.getIdent().equals("X"))) {
+    if (Tok.is(tok::ident) &&
+        (Tok.getIdent() == "x" || Tok.getIdent() == "X")) {
       consumeToken();
       skipWhitespace();
 
@@ -339,7 +339,7 @@ namespace cling {
 
   bool MetaParser::isqCommand() {
     bool result = false;
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("q")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "q") {
       result = true;
       m_Actions.actOnqCommand();
     }
@@ -347,7 +347,7 @@ namespace cling {
   }
 
   bool MetaParser::isUCommand(MetaSema::ActionResult& actionResult) {
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("U")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "U") {
       consumeAnyStringToken(tok::eof);
       llvm::StringRef path;
       if (getCurTok().is(tok::raw_ident)) {
@@ -360,9 +360,8 @@ namespace cling {
   }
 
   bool MetaParser::isICommand() {
-    if (getCurTok().is(tok::ident) &&
-        (   getCurTok().getIdent().equals("I")
-         || getCurTok().getIdent().equals("include"))) {
+    if (getCurTok().is(tok::ident) && (getCurTok().getIdent() == "I" ||
+                                       getCurTok().getIdent() == "include")) {
       consumeAnyStringToken(tok::eof);
       llvm::StringRef path;
       if (getCurTok().is(tok::raw_ident))
@@ -411,8 +410,8 @@ namespace cling {
   }
 
   bool MetaParser::isAtCommand() {
-    if (getCurTok().is(tok::at) // && getCurTok().getIdent().equals("@")
-        ) {
+    if (getCurTok().is(tok::at) // && getCurTok().getIdent() == "@"
+    ) {
       consumeToken();
       skipWhitespace();
       m_Actions.actOnAtCommand();
@@ -422,8 +421,7 @@ namespace cling {
   }
 
   bool MetaParser::israwInputCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("rawInput")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "rawInput") {
       MetaSema::SwitchMode mode = MetaSema::kToggle;
       consumeToken();
       skipWhitespace();
@@ -436,8 +434,7 @@ namespace cling {
   }
 
   bool MetaParser::isdebugCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("debug")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "debug") {
       std::optional<int> mode;
       consumeToken();
       skipWhitespace();
@@ -450,8 +447,7 @@ namespace cling {
   }
 
   bool MetaParser::isprintDebugCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("printDebug")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "printDebug") {
       MetaSema::SwitchMode mode = MetaSema::kToggle;
       consumeToken();
       skipWhitespace();
@@ -464,9 +460,8 @@ namespace cling {
   }
 
   bool MetaParser::isstoreStateCommand() {
-     if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("storeState")) {
-       //MetaSema::SwitchMode mode = MetaSema::kToggle;
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "storeState") {
+      // MetaSema::SwitchMode mode = MetaSema::kToggle;
       consumeToken();
       skipWhitespace();
       if (!getCurTok().is(tok::stringlit))
@@ -481,7 +476,7 @@ namespace cling {
 
   bool MetaParser::iscompareStateCommand() {
     if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("compareState")) {
+        getCurTok().getIdent() == "compareState") {
       //MetaSema::SwitchMode mode = MetaSema::kToggle;
       consumeToken();
       skipWhitespace();
@@ -496,8 +491,7 @@ namespace cling {
   }
 
   bool MetaParser::isstatsCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("stats")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "stats") {
       consumeToken();
       skipWhitespace();
       if (!getCurTok().is(tok::ident))
@@ -515,8 +509,7 @@ namespace cling {
 
   // dumps/creates a trace of the requested representation.
   bool MetaParser::istraceCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("trace")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "trace") {
       consumeToken();
       skipWhitespace();
       if (!getCurTok().is(tok::ident))
@@ -524,9 +517,11 @@ namespace cling {
       llvm::StringRef ident = getCurTok().getIdent();
       consumeToken();
       skipWhitespace();
-      m_Actions.actOnstatsCommand(ident.equals("ast")
-        ? llvm::StringRef("asttree") : ident,
-        getCurTok().is(tok::ident) ? getCurTok().getIdent() : llvm::StringRef());
+      m_Actions.actOnstatsCommand(ident == "ast" ? llvm::StringRef("asttree")
+                                                 : ident,
+                                  getCurTok().is(tok::ident)
+                                      ? getCurTok().getIdent()
+                                      : llvm::StringRef());
       consumeToken();
       return true;
     }
@@ -534,8 +529,7 @@ namespace cling {
   }
 
   bool MetaParser::isundoCommand() {
-    if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("undo")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "undo") {
       consumeToken();
       skipWhitespace();
       const Token& next = getCurTok();
@@ -550,7 +544,7 @@ namespace cling {
 
   bool MetaParser::isdynamicExtensionsCommand() {
     if (getCurTok().is(tok::ident) &&
-        getCurTok().getIdent().equals("dynamicExtensions")) {
+        getCurTok().getIdent() == "dynamicExtensions") {
       MetaSema::SwitchMode mode = MetaSema::kToggle;
       consumeToken();
       skipWhitespace();
@@ -565,7 +559,7 @@ namespace cling {
   bool MetaParser::ishelpCommand() {
     const Token& Tok = getCurTok();
     if (Tok.is(tok::quest_mark) ||
-        (Tok.is(tok::ident) && Tok.getIdent().equals("help"))) {
+        (Tok.is(tok::ident) && Tok.getIdent() == "help")) {
       m_Actions.actOnhelpCommand();
       SPDLOG_LOGGER_TRACE(xlx::logger, "ishelpCommand: true");
       return true;
@@ -574,7 +568,7 @@ namespace cling {
   }
 
   bool MetaParser::isfileExCommand() {
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("fileEx")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "fileEx") {
       m_Actions.actOnfileExCommand();
       return true;
     }
@@ -582,7 +576,7 @@ namespace cling {
   }
 
   bool MetaParser::isfilesCommand() {
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("files")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "files") {
       m_Actions.actOnfilesCommand();
       return true;
     }
@@ -592,8 +586,8 @@ namespace cling {
   bool MetaParser::isClassCommand() {
     const Token& Tok = getCurTok();
     if (Tok.is(tok::ident)) {
-      if (Tok.getIdent().equals("class") || Tok.getIdent().equals("Class")) {
-        const bool verbose = Tok.getIdent().equals("Class");
+      if (Tok.getIdent() == "class" || Tok.getIdent() == "Class") {
+        const bool verbose = Tok.getIdent() == "Class";
         consumeAnyStringToken(tok::eof);
         const Token& NextTok = getCurTok();
         llvm::StringRef className;
@@ -609,7 +603,7 @@ namespace cling {
   bool MetaParser::isNamespaceCommand() {
     const Token& Tok = getCurTok();
     if (Tok.is(tok::ident)) {
-      if (Tok.getIdent().equals("namespace")) {
+      if (Tok.getIdent() == "namespace") {
         consumeAnyStringToken(tok::eof);
         if (getCurTok().is(tok::raw_ident))
           return false;
@@ -621,7 +615,7 @@ namespace cling {
   }
 
   bool MetaParser::isgCommand() {
-    if (getCurTok().is(tok::ident) && getCurTok().getIdent().equals("g")) {
+    if (getCurTok().is(tok::ident) && getCurTok().getIdent() == "g") {
       consumeToken();
       skipWhitespace();
       llvm::StringRef varName;
@@ -636,7 +630,7 @@ namespace cling {
   bool MetaParser::isTypedefCommand() {
     const Token& Tok = getCurTok();
     if (Tok.is(tok::ident)) {
-      if (Tok.getIdent().equals("typedef")) {
+      if (Tok.getIdent() == "typedef") {
         consumeAnyStringToken(tok::eof);
         const Token& NextTok = getCurTok();
         llvm::StringRef typedefName;

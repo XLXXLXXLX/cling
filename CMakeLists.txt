@@ -24,14 +24,14 @@ if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
   # See <https://llvm.org/docs/CMake.html#embedding-llvm-in-your-project>.
   find_package(LLVM REQUIRED CONFIG)
   message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-  message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+  message(STATUS "Using LLVMConfig.cmake in: ${LLVM_CMAKE_DIR}")
 
   separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
   add_definitions(${LLVM_DEFINITIONS_LIST})
 
   find_package(Clang REQUIRED CONFIG)
   message(STATUS "Found supported version: Clang ${CLANG_PACKAGE_VERSION}")
-  message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+  message(STATUS "Using ClangConfig.cmake in: ${CLANG_CMAKE_DIR}")
 
   find_package(LLDB REQUIRED CONFIG)
   message(STATUS "Found LLDB ${LLDB_PACKAGE_VERSION}")
@@ -133,6 +133,7 @@ else()
 #   message(STATUS "LLVM_MAIN_SRC_DIR: " ${LLVM_MAIN_SRC_DIR})
 #   message(STATUS "LLVM_BINARY_DIR: " ${LLVM_BINARY_DIR})
 
+  set(CLANG_CMAKE_DIR "${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/cmake/clang")
   if (NOT CLANG_INCLUDE_DIRS)
     set (CLANG_INCLUDE_DIRS "${LLVM_MAIN_SRC_DIR}/tools/clang/include")
     # message(STATUS "CLANG_INCLUDE_DIRS: " ${CLANG_INCLUDE_DIRS})
